@@ -14,7 +14,7 @@ version: '3.6'
 
 services:
   mcp:
-    image: fabreguesm/flx-mcp-sar:0.1.0
+    image: fabreguesm/flx-mcp-sar:0.1.1
     hostname: flx-mcp-sar
     networks:
       - agentes

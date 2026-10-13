@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# flx-mcp-sar: version del ERP de cada cliente desde SAR y los fuentes que le corresponden (servidor MCP). SOLO LECTURA.
+#
+# Codigo e imagen: bitbucket.org/flexxus_id/flx-mcp-sar
+# Este repo es solo el stack: lo que Portainer despliega.
+#
+# Sin puerto publicado ni token: lo usan los stacks de la red "flx-agentes" con http://flx-mcp-sar_mcp:8104/mcp.
+# Base: SAR (Firebird 2.5) en 192.168.121.178:3050. El usuario es de solo lectura (GRANT SELECT sobre 5 tablas) y ademas
+# cada consulta corre en una transaccion READ ONLY: el servicio no puede escribir nunca.
+#
+# Variables del stack: SERVICE_NAME, NODE, LOKI_URL y los secretos SAR_DB_USER, SAR_DB_PASSWORD.
+# ---------------------------------------------------------------------------
+version: '3.6'
+
+services:
+  mcp:
+    image: fabreguesm/flx-mcp-sar:0.1.0
+    hostname: flx-mcp-sar
+    networks:
+      - agentes
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - SAR_DB_HOST=192.168.121.178
+      - SAR_DB_PORT=3050
+      - SAR_DB_PATH=/SAR/Base/DBADMINISTRADOR.GDB
+      - SAR_DB_USER=${SAR_DB_USER}
+      - SAR_DB_PASSWORD=${SAR_DB_PASSWORD}
+    deploy:
+      placement:
+        constraints: ["${NODE}"]
+      restart_policy:
+        condition: any
+        delay: 10s
+    logging:
+      driver: loki
+      options:
+        loki-url: ${LOKI_URL}
+
+networks:
+  agentes:
+    external: true
+    name: flx-agentes
